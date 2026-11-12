@@ -1,0 +1,13 @@
+{
+  "savekin-helper-setup": {
+    "cluster": [],
+    "indices": [],
+    "applications": [
+      {
+        "application": "kibana-.kibana",
+        "privileges": ["feature_agentBuilder.all"],
+        "resources": ["space:default"]
+      }
+    ]
+  }
+}

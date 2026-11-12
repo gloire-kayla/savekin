@@ -1,0 +1,56 @@
+# SaveKin product knowledge
+
+SaveKin helps trusted groups save together with clear rules, shares, shared records and elected officers. It is suitable for family projects, emergency reserves, education, equipment, community plans and recurring saving habits. Users may arrive with no goal; help them choose one that fits their people and comfortable contributions. Goals are user choices, not guaranteed financial outcomes.
+
+## Start and navigate
+
+New accounts choose Create a group, Join a group, or ask the helper to plan a goal. Returning users open the last selected group. Group Overview shows recorded contributions, shares, arrears, the recorded pool and contribution/share/invitation actions. Menu contains Overview, Members, Ledger, Rules, Decisions, Settlement, group switching, create and join options. Menu opens the labeled sidebar on small screens; Collapse menu hides it on desktop. Decisions show readable member names and proposal summaries. Payment settings sets a declared sandbox payout destination; it does not connect a live treasury. Sign out switches accounts. Joining requires a private invitation and acceptance of the displayed rules.
+
+The bottom-right chat shortcut and SaveKin helper menu item open the same dedicated helper screen, preserving the selected group and conversation. Consent to share messages, recent history and limited group context is saved once per account and AI provider, and can be revoked in chat. Web Enter sends and Shift+Enter adds a line; Android has a multiline composer and Send message button. PayPal checkout opens a browser from mobile. Its editable savings amount automatically updates the estimated fee and approval total; actual confirmed net is credited.
+
+## Saving plans
+
+A one-time goal is for a specific purchase/project and closes when the goal is funded and all active obligations are resolved. A date-based cycle ends on a chosen date. Repeating cycles distribute at the end of each configured period, then the president explicitly starts the next cycle; they do not automatically bill members. Ask about purpose, currency, number of members, comfortable contribution per member, target cost, timeframe and desired distribution pattern. Ask a few focused questions per turn instead of a long questionnaire. If users do not know a target, propose a few practical options and help them select one.
+
+Offer practical planning: define purpose and target, estimate an affordable schedule, compare goal/date/repeating options, discuss shares and rules, assign responsibilities, suggest milestones and a simple roadmap. Label assumptions, show arithmetic and include payment fees as uncertainty. Principal contributions = share price per month × number of shares × number of monthly periods. A group's monthly contribution is the sum across members. For equal contributions: months needed ≈ target / (members × contribution per member per month), rounded up, before costs. Do not invent returns or interest. Explain tradeoffs without pressuring users to save money needed for essentials. A suggested plan is a draft; it does not create a group or change its rules.
+
+## Roles and decisions
+
+The creator is president. A different active member is elected treasurer through Rules → Propose an officer, followed by Decisions. At least two-thirds of eligible active members must vote yes; the nominee must also consent. The president proposes rule and officer changes. Members vote; AI cannot vote. The treasurer holds funds in the configured PayPal account. Shared records do not prevent withdrawals, verify an available balance, guarantee repayment, or remove the need to choose someone trusted.
+
+## Shares and obligations
+
+Monthly obligation is shares × share price. More shares mean a larger obligation and a larger share of distributable surplus. Increasing shares now requires catch-up for elapsed monthly periods; decreases and optional scheduled increases take effect next cycle. Extra net contributions are credit, not automatically extra shares. New members normally wait for the next cycle; accepted rules can instead allow catch-up. Current-cycle share price is fixed in this build. Arrears are unpaid obligations; they block settlement.
+
+## Contributions and fees
+
+Members open a group and choose PayPal sandbox contribution, enter Amount to save, and Calculate total. The app displays an estimated fee and gross checkout amount before approval. Actual provider fees determine actual net savings; a shortfall remains visible, extra net remains credit. The estimator is sandbox-only and not an approved live surcharge policy. The default USD example is 3.49% + 0.49, and fees apply to the gross amount, not just the savings target. Do not guarantee estimates or country availability.
+
+PayPal credentials are entered only into PayPal. SaveKin login and PayPal login are separate. The configured Business sandbox account receives payments; use a separate Personal sandbox account to test checkout. The treasurer can instead Contribute treasury funds: declare their own funds already set aside, add a unique reference/explanation and optional web evidence file, then request president confirmation under Decisions. Only the separate president's approval credits it. This is labeled manually confirmed and is not a PayPal-verified transfer. AI cannot verify supporting evidence, and supporting files/notes are excluded from AI context.
+
+## Fines, exits, surplus and distribution
+
+Accepted rules may enable a fixed fine and an early-exit penalty. There are no loans or automatic interest. Collected penalties can join surplus for share-based distribution or carry into the next cycle. Fines and expense collection are currently demo ledger actions, not automated sandbox charges. An early exit requires both officers; payout is principal less the accepted penalty capped at principal, without cycle surplus. Early-exit payouts are simulated in demo mode only; sandbox exit payouts are not implemented.
+
+Settlement is proposed after the goal/date condition, clearing arrears and resolving pending governance, exits, treasury contributions and payment reviews. Both officers approve a frozen statement. Each fully paid active member receives actual principal plus distributable surplus by shares; cents use exact rounding. Demo distribution is simulated. Sandbox cycle payouts use frozen declared payout destinations set before the proposal. Only treasurer sends; treasury allocation is retained in the treasury account. The treasury pays outbound payout fees separately. Pending, unclaimed, failed or blocked items prevent completion; checking status does not initiate another transfer. Resume same batch reuses the saved request after an uncertain outcome. Do not advise replacement payments for uncertain transactions. After completed distribution, repeating groups can start a new cycle. Late refunds/reversals or returned payouts may require reconciliation.
+
+## Troubleshooting and limits
+
+Created payment means order exists, not paid. Approved means buyer authorized but capture may still be needed. Pending is not credited. Completed payments are credited only after provider checks. For interrupted checkout use Ledger → Check payment status before trying again; Finish approved sandbox payment captures that same approved order. A generic error does not prove country or account restrictions; ask what status/error is visible. Do not request secrets, PayPal passwords or complete card details. Do not claim a successful payment from a screenshot or user assertion alone.
+
+Webhooks are automatic provider notifications. Their signed endpoint exists but needs a public HTTPS relay and configured Webhook ID; local explicit status checks work without it. Local terminal must keep the server running. Hiding the VS Code terminal panel is different from killing the terminal process.
+
+The current build is local demo/sandbox, one configured treasury PayPal app, USD checkout/payouts, and RWF demo records. No live funds, production deployment, native embedded checkout, general multi-treasurer OAuth onboarding, password recovery/email verification, loans or automatically initiated early-exit payouts. Arbitrary treasurer account onboarding needs a separate approved platform integration. Account capability and country support must be checked for the needed sending/receiving operations. AI needs a configured provider: OpenAI uses an API key/model, while Elastic uses a Kibana URL, dedicated agent ID and restricted runtime API key; do not pretend a response was generated when unavailable. Chat history is saved in the local SaveKin database per signed-in user; only recent messages and limited selected-group context are sent with consent. Users can delete their own chats.
+
+
+## Profile, discussions and notifications
+
+Click your sidebar name/avatar for My profile. Change your display name and profile photo, verify/change email using your current password and an emailed code, change password using the current password, and set a payout destination separately from the group treasury. Password changes invalidate other sessions; recovery invalidates all sessions. Forgot password and Enter reset code are on sign-in. Email delivery needs SMTP configuration; local development mode saves private email previews instead of sending email. Never ask for passwords, verification codes or recovery codes in AI chat.
+
+Group Discussions in Menu is a private text conversation for current group members, separate from AI chat and official Decisions. Names on older messages are preserved. Former members cannot read discussions. Notifications contains contribution reminders, unread discussions, proposals and treasury updates; updates poll every 15 seconds. They are in-app updates, not push notifications. Discussion messages are marked read when opened.
+
+## Treasury setup and replacement
+
+Group treasury is in Menu. A treasurer declares a receiving sandbox business email there. This email may differ from the SaveKin login and personal payout email. It is not automatically connected or ownership-verified. Collections work only when the declared email matches the sandbox account configured on the server; production merchant onboarding is not implemented.
+
+An approved replacement starts a handover instead of immediately changing treasurer. The outgoing treasurer remains responsible and financial/group changes and joining pause. Resolve all pending orders/payouts in Ledger, including created orders. The incoming treasurer declares the receiving account. The outgoing treasurer prepares a statement showing available group funds equal to the recorded pool, fees, who pays fees and a reconciliation note. Resolve differences first. At least two-thirds of active members, including president and both treasurers, approve terms. Revision clears previous approvals. The outgoing treasurer transfers funds outside SaveKin and records a reference. The incoming treasurer confirms receipt and the president confirms review. These are manual records, never PayPal-verified. Sandbox activation waits for configuration of the new receiving account. The workflow itself never moves money. A refusal to hand over leaves the process unresolved; changing a role cannot recover money. Old payment recipients and group records remain unchanged.

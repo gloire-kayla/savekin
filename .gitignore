@@ -1,0 +1,39 @@
+# Environment & Secrets
+.env
+.env.*
+.env*.local
+!.env.example
+*.pem
+*.key
+*.cert
+*.crt
+
+# Databases & local storage
+data/
+*.db
+*.sqlite
+*.sqlite3
+mail-preview/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Node / Mobile / Web
+node_modules/
+.expo/
+dist/
+.android/
+.cache/
+mobile/.env.local
+mobile/dist-test/
+
+# Logs
+*.log
+
+# OS metadata
+.DS_Store
+Thumbs.db
+

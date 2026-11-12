@@ -1,0 +1,13 @@
+{
+  "savekin-helper-runtime": {
+    "cluster": ["monitor_inference"],
+    "indices": [],
+    "applications": [
+      {
+        "application": "kibana-.kibana",
+        "privileges": ["feature_agentBuilder.read", "feature_actions.read"],
+        "resources": ["space:default"]
+      }
+    ]
+  }
+}

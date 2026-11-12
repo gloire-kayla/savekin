@@ -1,0 +1,8 @@
+{
+  "expo": {
+    "name": "SaveKin", "slug": "savekin", "version": "0.2.0",
+    "orientation": "portrait", "userInterfaceStyle": "light",
+    "ios": { "supportsTablet": true },
+    "android": { "package": "com.savekin.development" }
+  }
+}

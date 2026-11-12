@@ -1,0 +1,31 @@
+// Pure state/template checks with a minimal document stub; no browser rendering.
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const nodes=new Map();
+function node(id){if(!nodes.has(id))nodes.set(id,{innerHTML:'',textContent:'',value:'',scrollHeight:100,scrollTop:0,clientHeight:100,style:{},classList:{add(){},remove(){},toggle(){}},querySelector(){return node('button');},setAttribute(){},addEventListener(){},focus(){},getClientRects(){return [1];}});return nodes.get(id);}
+const context=vm.createContext({console,Intl,URLSearchParams,URL,Date,Map,crypto:{randomUUID:()=> 'test-message'},setInterval(){},clearInterval(){},setTimeout(){},clearTimeout(){},fetch:()=>new Promise(()=>{}),location:{search:'',hash:'',pathname:'/',origin:'http://127.0.0.1:8000'},history:{replaceState(){}},window:{innerWidth:1200,addEventListener(){}},document:{hidden:false,getElementById:node,querySelector:node,querySelectorAll:()=>[],addEventListener(){},body:{classList:{toggle(){}}}}});
+for(const file of ['web/helper.js','web/workspace.js','web/app.js'])vm.runInContext(fs.readFileSync(file,'utf8'),context);
+vm.runInContext(`state={user:{id:'alice',name:'Alice',email:'alice@example.com'},profile:{photo:null},notifications:[],config:{mode:'demo'},groups:[{id:'circle',name:'Family',currency:'USD',president:'alice',treasurer:'bob',gross:200,pool:200,period:1,rules:{goal:1000,sharePrice:100},cycle:{number:1,status:'open',start:'2026-01-01',end:'2026-12-31'},members:[{id:'ma',user_id:'alice',name:'Alice',shares:2,arrears:0,status:'active'},{id:'mb',user_id:'bob',name:'Bob',shares:1,arrears:100,status:'active'}],treasury:{receiving:{status:'setup_required'},history:[]}}]};selected='circle';tab='overview';render();`,context);
+let html=nodes.get('app').innerHTML;
+assert(html.includes('Recorded contributions'));
+assert(html.includes('data-tab="discussions"'));
+assert(html.includes('data-action="profile"'));
+vm.runInContext(`helperDraft='Unfinished plan';page='helper';render();`,context);
+html=nodes.get('app').innerHTML;
+assert(html.includes('Unfinished plan'));
+assert(html.includes('helper-layout'));
+assert(!html.includes('chat-popup'));
+assert(!html.includes('role="dialog"'));
+vm.runInContext(`page='profile';render();page='helper';render();`,context);
+assert.equal(vm.runInContext('selected',context),'circle');
+assert.equal(vm.runInContext('helperDraft',context),'Unfinished plan');
+vm.runInContext(`page='group';tab='discussions';discussionRecords.circle=[{id:1,user_id:'bob',sender_name:'<script>name</script>',created:'2026-01-01',content:'<img src=x onerror=alert(1)>'}];discussionDrafts.circle='Unfinished group message';render();`,context);
+html=nodes.get('app').innerHTML;
+assert(html.includes('&lt;script&gt;name&lt;/script&gt;'));
+assert(!html.includes('<img src=x'));
+assert(html.includes('Unfinished group message'));
+vm.runInContext(`page='helper';render();page='group';render();`,context);
+assert(nodes.get('app').innerHTML.includes('Unfinished group message'));
+vm.runInContext(`tab='treasury';state.groups[0].treasury.handover={incoming:'alice',outgoing:'bob',status:'setup'};render();`,context);
+assert(nodes.get('app').innerHTML.includes('Set incoming receiving account'));
+assert(nodes.get('app').innerHTML.includes('outgoing treasurer remains responsible'));
+console.log('Full-screen helper, profile navigation, draft retention and discussion escaping passed.');
