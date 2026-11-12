@@ -203,6 +203,75 @@ def proposal_create(db,group,kind,payload,actor):
     audit(db,group['id'],actor,'Proposed '+kind)
     return {'proposalId':pid}
 
+def seed_demo(db, actor):
+    alice = row(db, "SELECT * FROM sk_users WHERE email='alice@savekin.local'")
+    if not alice:
+        aid = uid()
+        db.execute("INSERT INTO sk_users VALUES(?,?,?,?)", (aid, 'Alice (President)', 'alice@savekin.local', password_hash('demo-password-123')))
+        alice = {'id': aid}
+    bob = row(db, "SELECT * FROM sk_users WHERE email='bob@savekin.local'")
+    if not bob:
+        bid = uid()
+        db.execute("INSERT INTO sk_users VALUES(?,?,?,?)", (bid, 'Bob (Treasurer)', 'bob@savekin.local', password_hash('demo-password-123')))
+        bob = {'id': bid}
+    charlie = row(db, "SELECT * FROM sk_users WHERE email='charlie@savekin.local'")
+    if not charlie:
+        cid = uid()
+        db.execute("INSERT INTO sk_users VALUES(?,?,?,?)", (cid, 'Charlie (Member)', 'charlie@savekin.local', password_hash('demo-password-123')))
+        charlie = {'id': cid}
+
+    existing = row(db, "SELECT * FROM sk_groups WHERE name='Kigali Community Circle'")
+    if existing:
+        gid = existing['id']
+    else:
+        gid = uid(); cycle_id = uid()
+        start = date.today() - timedelta(days=60)
+        end = date.today()
+        rules = {
+            'sharePrice': 1000,
+            'goal': 50000,
+            'ending': 'repeat',
+            'months': 6,
+            'joining': 'catch_up',
+            'fine': 100,
+            'exitPenalty': 500,
+            'surplus': 'distribute',
+            'voting': 'Two-thirds majority'
+        }
+        db.execute("INSERT INTO sk_groups VALUES(?,?,?,?,?,?,?,?)",
+            (gid, 'Kigali Community Circle', alice['id'], bob['id'], 'USD', json.dumps(rules), secrets.token_urlsafe(24), core.now()))
+        db.execute("INSERT INTO sk_cycles VALUES(?,?,?,?,?,?,?)",
+            (cycle_id, gid, 1, start.isoformat(), end.isoformat(), 'open', None))
+        
+        m_alice = uid(); m_bob = uid(); m_charlie = uid()
+        db.execute("INSERT INTO sk_members VALUES(?,?,?,?,?,?,?)", (m_alice, gid, alice['id'], 'active', 2, None, core.now()))
+        db.execute("INSERT INTO sk_members VALUES(?,?,?,?,?,?,?)", (m_bob, gid, bob['id'], 'active', 2, None, core.now()))
+        db.execute("INSERT INTO sk_members VALUES(?,?,?,?,?,?,?)", (m_charlie, gid, charlie['id'], 'active', 1, None, core.now()))
+        
+        db.execute("INSERT INTO sk_ledger VALUES(?,?,?,?,?,?,?,?)", (uid(), gid, cycle_id, m_alice, 'contribution', 4000, 'DEMO-ALICE-1', core.now()))
+        db.execute("INSERT INTO sk_ledger VALUES(?,?,?,?,?,?,?,?)", (uid(), gid, cycle_id, m_bob, 'treasury_contribution', 4000, 'DEMO-BOB-TREASURY', core.now()))
+        db.execute("INSERT INTO sk_ledger VALUES(?,?,?,?,?,?,?,?)", (uid(), gid, cycle_id, m_charlie, 'contribution', 1000, 'DEMO-CHARLIE-1', core.now()))
+        
+        db.execute("INSERT OR REPLACE INTO sk_payout_accounts VALUES(?,?)", (alice['id'], 'alice-payout@example.com'))
+        db.execute("INSERT OR REPLACE INTO sk_payout_accounts VALUES(?,?)", (bob['id'], 'bob-payout@example.com'))
+        db.execute("INSERT OR REPLACE INTO sk_payout_accounts VALUES(?,?)", (charlie['id'], 'charlie-payout@example.com'))
+        db.execute("INSERT OR REPLACE INTO sk_receiving_accounts VALUES(?,?,?,?)", (gid, bob['id'], 'bob-treasury@example.com', core.now()))
+
+        db.execute("INSERT INTO sk_discussions(group_id, user_id, sender_name, content, client_id, created, sent_at) VALUES(?,?,?,?,?,?,?)",
+            (gid, alice['id'], 'Alice (President)', 'Welcome to our circle! Contributions and PayPal payouts will be settled here.', uid(), core.now(), time.time()))
+    
+    if actor:
+        user_mem = row(db, "SELECT * FROM sk_members WHERE group_id=? AND user_id=?", (gid, actor))
+        if not user_mem:
+            mid = uid()
+            db.execute("INSERT INTO sk_members VALUES(?,?,?,?,?,?,?)", (mid, gid, actor, 'active', 1, None, core.now()))
+            c = current(db, gid)
+            db.execute("INSERT INTO sk_ledger VALUES(?,?,?,?,?,?,?,?)", (uid(), gid, c['id'], mid, 'contribution', 2000, 'DEMO-USER-INITIAL', core.now()))
+            db.execute("INSERT OR REPLACE INTO sk_payout_accounts VALUES(?,?)", (actor, 'my-test-payout@example.com'))
+        db.execute("INSERT INTO sk_preferences VALUES(?,?) ON CONFLICT(user_id) DO UPDATE SET last_group=excluded.last_group", (actor, gid))
+        
+    return {'ok': True, 'groupId': gid}
+
 def dispatch(method,path,body,token=''):
     if method=='GET' and path not in ('/api/state','/api/assistant/chats') and not path.startswith(('/api/invite/','/api/assistant/chats/')):
         raise Problem('Use POST for this operation.',405)
@@ -282,6 +351,8 @@ def dispatch(method,path,body,token=''):
                         'paypalReady':all(core.os.environ.get(k) for k in ('PAYPAL_CLIENT_ID','PAYPAL_CLIENT_SECRET','PAYPAL_TREASURER_EMAIL')),
                         'webhookReady':bool(core.os.environ.get('PAYPAL_WEBHOOK_ID')),
                         'assistantReady':ai_providers.ready(),'assistantProvider':ai_providers.provider()}}
+        if path=='/api/demo/seed':
+            return seed_demo(db, actor)
         if path=='/api/groups':
             currency=body.get('currency','USD')
             if currency not in ('USD','RWF'): raise Problem('Choose USD or RWF. PayPal sandbox currently supports USD only here.')

@@ -79,7 +79,7 @@ def handle(db,method,path,body,actor):
     count=db.execute('SELECT COUNT(*) FROM sk_assistant_messages WHERE chat_id=?',(cid,)).fetchone()[0]
     instructions=system_instructions()
     try:
-        answer=ai_providers.generate(instructions,[{'role':'user','content':json.dumps({'records':records})}]+history+[{'role':'user','content':question}])
+        answer=ai_providers.generate(instructions,[{'role':'user','content':json.dumps({'records':records})}]+history+[{'role':'user','content':question}],records=records)
     except (core.urllib.error.URLError,TimeoutError): raise sk.Problem('The helper could not respond. Your savings records were not changed; you can retry this message.',502)
     except ValueError: raise sk.Problem('The AI provider configuration or reply is invalid. Check the server setup; no savings records were changed.',503)
     if not answer.strip(): raise sk.Problem('The helper returned no reply. Please retry.',502)

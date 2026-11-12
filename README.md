@@ -12,6 +12,14 @@ Run the backend in one PowerShell terminal:
 
 Open http://127.0.0.1:8000 on this computer. Create an account with **test details and a unique test password**. All financial actions are demo or sandbox only. The server binds to loopback; it is not a production deployment.
 
+### 60-Second Quick Demo for Judges & Reviewers
+1. Run `.\start.ps1` (or `python server.py`) and open http://127.0.0.1:8000.
+2. Sign in or register with any test email and password.
+3. Click **"✨ Load Sample Circle"** on the dashboard.
+   - Instantly populates an active savings circle with pre-existing members (Alice as President, Bob as Treasurer, Charlie as Member).
+   - Pre-configured with active contributions, catch-up arrears, discussion messages, and settlement ready for review!
+4. Open the **SaveKin Helper** (AI assistant) via the floating chat button to ask budgeting, cycle comparison, and rule questions.
+
 ### USB Android
 
 1. Connect and unlock the phone; accept its USB debugging authorization prompt.

@@ -12,6 +12,20 @@ from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
+
+def _load_env_file():
+    env_file = ROOT / '.env'
+    if env_file.is_file():
+        for line in env_file.read_text(encoding='utf-8').splitlines():
+            line = line.strip()
+            if not line or line.startswith('#') or '=' not in line:
+                continue
+            k, v = line.split('=', 1)
+            k, v = k.strip(), v.strip().strip('"').strip("'")
+            if k and k not in os.environ:
+                os.environ[k] = v
+
+_load_env_file()
 DB = Path(os.environ.get('GATHERSAVE_DATA_DIR', str(ROOT / 'data'))) / 'gathersave.sqlite3'
 DB.parent.mkdir(exist_ok=True)
 MODE = os.environ.get('PAYMENT_MODE', 'demo')

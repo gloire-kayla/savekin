@@ -34,9 +34,53 @@ try {
     $env:PAYPAL_TREASURER_EMAIL = $saveKinRecipient.Trim().ToLowerInvariant()
     $env:PAYPAL_WEBHOOK_ID = $saveKinWebhookId.Trim()
     $env:PAYPAL_CLIENT_SECRET = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($saveKinPointer)
-    $saveKinPython = 'C:/Users/PC/AppData/Local/Python/pythoncore-3.14-64/python.exe'
-    if (-not (Test-Path -LiteralPath $saveKinPython)) { $saveKinPython = 'python' }
-    & $saveKinPython (Join-Path $PSScriptRoot 'sandbox_check.py')
+
+    $searchPaths = @(
+        'C:/Users/PC/AppData/Local/Python/pythoncore-3.14-64/python.exe',
+        "$env:LOCALAPPDATA\Python\pythoncore-3.14-64\python.exe",
+        "$env:LOCALAPPDATA\Programs\Python\Python314\python.exe",
+        "$env:LOCALAPPDATA\Programs\Python\Python313\python.exe",
+        "$env:LOCALAPPDATA\Programs\Python\Python312\python.exe",
+        "$env:LOCALAPPDATA\Programs\Python\Python311\python.exe",
+        "$env:ProgramFiles\Python314\python.exe",
+        "$env:ProgramFiles\Python313\python.exe",
+        "$env:ProgramFiles\Python312\python.exe",
+        "$env:ProgramFiles\Python311\python.exe"
+    )
+    $saveKinPython = $null
+    foreach ($p in $searchPaths) {
+        if ($p -and (Test-Path -LiteralPath $p)) {
+            try {
+                $test = & $p -c "import sys; print(sys.executable)" 2>$null
+                if ($LASTEXITCODE -eq 0 -and $test) { $saveKinPython = $p; break }
+            } catch {}
+        }
+    }
+    if (-not $saveKinPython) {
+        $pyCmd = Get-Command py -ErrorAction SilentlyContinue
+        if ($pyCmd) {
+            try {
+                $test = & py -3 -c "import sys; print(sys.executable)" 2>$null
+                if ($LASTEXITCODE -eq 0 -and $test) { $saveKinPython = "py" }
+            } catch {}
+        }
+    }
+    if (-not $saveKinPython) {
+        $pythonCmd = Get-Command python -ErrorAction SilentlyContinue
+        if ($pythonCmd) {
+            try {
+                $test = & python -c "import sys; print(sys.executable)" 2>$null
+                if ($LASTEXITCODE -eq 0 -and $test) { $saveKinPython = "python" }
+            } catch {}
+        }
+    }
+    if (-not $saveKinPython) { $saveKinPython = 'python' }
+
+    if ($saveKinPython -eq 'py') {
+        & py -3 (Join-Path $PSScriptRoot 'sandbox_check.py')
+    } else {
+        & $saveKinPython (Join-Path $PSScriptRoot 'sandbox_check.py')
+    }
     if ($LASTEXITCODE -ne 0) { throw 'Sandbox check failed. The existing server was left running.' }
     if ($CheckOnly) { return }
     if ($RestartLocal) {
