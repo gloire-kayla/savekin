@@ -3,6 +3,9 @@ Set-Location -LiteralPath $PSScriptRoot
 
 function Find-SaveKinPython {
     $searchPaths = @(
+        'C:/Users/PC/AppData/Local/Python/pythoncore-3.15-64/python.exe',
+        "$env:LOCALAPPDATA\Python\pythoncore-3.15-64\python.exe",
+        "$env:LOCALAPPDATA\Programs\Python\Python315\python.exe",
         'C:/Users/PC/AppData/Local/Python/pythoncore-3.14-64/python.exe',
         "$env:LOCALAPPDATA\Python\pythoncore-3.14-64\python.exe",
         "$env:LOCALAPPDATA\Programs\Python\Python314\python.exe",
