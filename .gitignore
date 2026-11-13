@@ -7,6 +7,13 @@
 *.key
 *.cert
 *.crt
+*.p12
+*.pfx
+*.jks
+*.keystore
+.npmrc
+.pypirc
+.netrc
 
 # Databases & local storage
 data/
@@ -36,4 +43,3 @@ mobile/dist-test/
 # OS metadata
 .DS_Store
 Thumbs.db
-
