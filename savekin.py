@@ -657,11 +657,15 @@ class Handler(core.Handler):
         raw=json.dumps(data).encode(); self.send_response(status)
         self.send_header('Content-Type','application/json'); self.send_header('Cache-Control','no-store')
         if isinstance(data,dict) and data.get('token'):
-            self.send_header('Set-Cookie','savekin_session='+data['token']+'; HttpOnly; SameSite=Strict; Path=/; Max-Age=604800')
-        if self.path=='/api/auth/logout': self.send_header('Set-Cookie','savekin_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0')
+            secure='; Secure' if core.os.environ.get('RENDER')=='true' else ''
+            self.send_header('Set-Cookie','savekin_session='+data['token']+'; HttpOnly; SameSite=Strict; Path=/; Max-Age=604800'+secure)
+        if self.path=='/api/auth/logout':
+            secure='; Secure' if core.os.environ.get('RENDER')=='true' else ''
+            self.send_header('Set-Cookie','savekin_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0'+secure)
         self.send_header('Content-Length',str(len(raw))); self.end_headers(); self.wfile.write(raw)
     def do_GET(self):
         path=urlparse(self.path).path
+        if path=='/healthz': return self.json({'ok':True})
         if not path.startswith('/api/'):
             if path in ('/join','/pay'): self.path='/'
             return super().do_GET()
@@ -682,10 +686,10 @@ class Handler(core.Handler):
                 self.log_error('Webhook reconciliation failed; delivery can be retried')
                 return self.json({'error':'Webhook was not processed; retry delivery.'},500)
         host=self.headers.get('Host','')
-        if host not in ('localhost:8000','127.0.0.1:8000','10.0.2.2:8000'):
+        if host not in core.allowed_hosts():
             return self.json({'error':'Unrecognized host.'},403)
         origin=self.headers.get('Origin')
-        if origin and origin not in ('http://localhost:8000','http://127.0.0.1:8000'):
+        if origin and origin not in core.allowed_origins():
             return self.json({'error':'Cross-origin write blocked.'},403)
         try:
             length=int(self.headers.get('Content-Length','0'))

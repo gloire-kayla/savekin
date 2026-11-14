@@ -248,6 +248,33 @@ class SaveKinTests(unittest.TestCase):
         finally:
             client.close(); httpd.shutdown(); httpd.server_close(); thread.join()
 
+    def test_render_health_check_and_secure_session_cookie(self):
+        httpd=sk.core.ThreadingHTTPServer(('127.0.0.1',0),sk.Handler)
+        thread=threading.Thread(target=httpd.serve_forever,daemon=True); thread.start()
+        client=http.client.HTTPConnection('127.0.0.1',httpd.server_port,timeout=4)
+        try:
+            client.request('GET','/healthz')
+            response=client.getresponse()
+            self.assertEqual(response.status,200)
+            self.assertEqual(json.loads(response.read()),{'ok':True})
+            credentials=json.dumps({'email':'alice@example.com','password':'unique-test-password-123'})
+            with patch.dict(os.environ,{
+                'RENDER':'true',
+                'RENDER_EXTERNAL_HOSTNAME':'savekin.onrender.com',
+                'RENDER_EXTERNAL_URL':'https://savekin.onrender.com',
+            }):
+                client.request('POST','/api/auth/login',credentials,{
+                    'Host':'savekin.onrender.com',
+                    'Origin':'https://savekin.onrender.com',
+                    'Content-Type':'application/json',
+                })
+                response=client.getresponse()
+                self.assertEqual(response.status,200)
+                self.assertIn('Secure',response.getheader('Set-Cookie'))
+                response.read()
+        finally:
+            client.close(); httpd.shutdown(); httpd.server_close(); thread.join()
+
     def test_assistant_requires_consent_and_uses_limited_context(self):
         gid=self.group()
         with self.assertRaises(sk.Problem): self.call('/api/assistant',{'groupId':gid,'question':'What is due?'})

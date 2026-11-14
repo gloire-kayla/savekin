@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: savekin
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python server.py
+    healthCheckPath: /healthz
+    envVars:
+      - key: PAYMENT_MODE
+        value: demo
+      - key: GATHERSAVE_DATA_DIR
+        value: /tmp/savekin-data

@@ -27,6 +27,23 @@ class MoneyTests(unittest.TestCase):
             with self.subTest(value=value), self.assertRaises(ValueError):
                 server.amount(value)
 
+class DeploymentConfigTests(unittest.TestCase):
+    def test_render_host_and_https_origin_are_added_without_widening_local_defaults(self):
+        with patch.dict(os.environ, {
+            'RENDER_EXTERNAL_HOSTNAME': 'savekin.onrender.com',
+            'RENDER_EXTERNAL_URL': 'https://savekin.onrender.com',
+        }):
+            self.assertIn('savekin.onrender.com', server.allowed_hosts())
+            self.assertIn('https://savekin.onrender.com', server.allowed_origins())
+            self.assertNotIn('https://untrusted.example', server.allowed_origins())
+
+    def test_non_https_render_url_is_not_allowed_as_an_origin(self):
+        with patch.dict(os.environ, {
+            'RENDER_EXTERNAL_HOSTNAME': 'savekin.onrender.com',
+            'RENDER_EXTERNAL_URL': 'http://savekin.onrender.com',
+        }):
+            self.assertNotIn('http://savekin.onrender.com', server.allowed_origins())
+
 class ApiTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

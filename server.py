@@ -64,6 +64,20 @@ with connect() as db:
 def now():
     return datetime.now(timezone.utc).isoformat()
 
+def allowed_hosts():
+    hosts = {'127.0.0.1:8000', 'localhost:8000', '10.0.2.2:8000'}
+    render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME', '').strip().lower()
+    if render_host:
+        hosts.add(render_host)
+    return hosts
+
+def allowed_origins():
+    origins = {'http://127.0.0.1:8000', 'http://localhost:8000'}
+    render_url = os.environ.get('RENDER_EXTERNAL_URL', '').strip().rstrip('/')
+    if render_url.startswith('https://'):
+        origins.add(render_url)
+    return origins
+
 def paypal(path, payload=None, token=None, request_id=None, method=None):
     headers = {'Content-Type': 'application/json'}
     if token:
@@ -129,10 +143,10 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         # Local-only development workspace. Reject cross-origin writes and DNS rebinding.
         host = self.headers.get('Host', '')
-        if host not in ('127.0.0.1:8000', 'localhost:8000', '10.0.2.2:8000'):
+        if host not in allowed_hosts():
             return self.json({'error': 'Local access only'}, 403)
         origin = self.headers.get('Origin')
-        if origin and origin not in ('http://127.0.0.1:8000', 'http://localhost:8000'):
+        if origin and origin not in allowed_origins():
             return self.json({'error': 'Cross-origin write blocked'}, 403)
         try:
             length = int(self.headers.get('Content-Length', '0'))
@@ -218,6 +232,8 @@ class Handler(BaseHTTPRequestHandler):
 
 if __name__ == '__main__':
     from savekin import Handler as SaveKinHandler
-    print('SaveKin is running at http://127.0.0.1:8000', flush=True)
+    bind_host = '0.0.0.0' if os.environ.get('RENDER') == 'true' else '127.0.0.1'
+    port = int(os.environ.get('PORT', '8000'))
+    print(f'SaveKin is running on {bind_host}:{port}', flush=True)
     print('Development only. Demo/sandbox payments; keep real funds out.', flush=True)
-    ThreadingHTTPServer(('127.0.0.1', 8000), SaveKinHandler).serve_forever()
+    ThreadingHTTPServer((bind_host, port), SaveKinHandler).serve_forever()
